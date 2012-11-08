@@ -28,7 +28,7 @@ function parsePath(item, center) {
 
     if (item.hasChildren()) {
         for each (path in item.children){
-            coords += parsePath(path)+"\r\n";
+            coords += parsePath(path, center)+"\r\n";
         }
         return coords;
     } 
@@ -55,7 +55,7 @@ function parsePath(item, center) {
 var data = "";
 
 for each (item in doc.selectedItems) {
-    data  += parsePath(item, item.center);
+    data  += parsePath(item, item.bounds.center);
 }
 
 
