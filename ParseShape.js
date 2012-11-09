@@ -21,45 +21,46 @@ var arb = doc.artboards[0];
 
 function parsePath(item, center) {
 
-    if (center==null) center = {x:0, y:0};
-
     console.log("Item", item, item.hasChildren());
-    var coords = "";
+    var curves = "";
 
     if (item.hasChildren()) {
         for each (path in item.children){
-            coords += parsePath(path, center)+"\r\n";
+            curves += parsePath(path, center);
         }
-        return coords;
+        return curves;
     } 
     
-    var pp = new Path();
-    pp.closed = item.closed;
-    for each (curve in item.curves) { 
+    //var pp = new Path();
+    //pp.closed = item.closed;
+    curves += "[";
+    for each (curve in item.curves) {
         var l = curve.length;
         var s = Math.ceil(l/step);
         s =1.0/s;
         if (s > 0 && s < 1.0) {
             for (var t=0; t<1.0; t += s) {
                 var pt = curve.getPoint(t);
-                pp.add(pt);
-                coords += "{x:"+((pt.x-center.x)*zoom).toFixed(2)+",y:"+((pt.y-center.y)*zoom).toFixed(2)+"},";
+                //pp.add(pt);
+                curves += "{x:"+((pt.x-center.x)*zoom).toFixed(2)+",y:"+((pt.y-center.y)*zoom).toFixed(2)+"},";
             }
         }
         //console.log(segment.handleIn);
     }
-    return coords;
+    return curves.slice(0,-1)+"],";
 }
 
 
-var data = "";
-
+var data = "var SHAPES = [";
 for each (item in doc.selectedItems) {
-    data  += parsePath(item, item.bounds.center);
+    data += "{name:\""+item.name+"\",curves:";
+    data += "["+parsePath(item, item.bounds.center).slice(0,-1)+"]";
+    data += "},";
 }
+data  = data.slice(0,-1)+"];";
 
 
-var file = new File(script.file.parent, "points.pnt");
+var file = new File(script.file.parent, "shapes.js");
 if (file.exists()) file.remove();
 file.open();
 
